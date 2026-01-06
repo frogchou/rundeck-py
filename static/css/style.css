@@ -16,6 +16,7 @@ body {
     color: var(--text);
 }
 
+
 .login-container {
     max-width: 420px;
     margin-top: 80px;
@@ -99,6 +100,7 @@ button.danger { background: var(--danger); color: #fff; }
 .output .system { color: var(--accent); }
 .output .stderr { color: #fbbf24; }
 .output .stdout { color: #cbd5e1; }
+
 
 .login-form {
     background: var(--panel);

@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     allow_arbitrary_command: bool = Field(False, env="ALLOW_ARBITRARY_COMMAND")
     access_password: str = Field("frogchou", env="ACCESS_PASSWORD")
 
+
     # Comma-separated whitelist entries
     command_whitelist: str = Field(
         "echo,ls,cat,tail,grep,systemctl status,journalctl -u", env="COMMAND_WHITELIST"

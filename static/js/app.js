@@ -42,6 +42,7 @@ async function startTask(mode, value) {
             window.location = '/login';
             return;
         }
+
         const data = await res.json();
         if (!data.success) {
             appendOutput(`[error] ${data.error.message || '执行失败'}`);

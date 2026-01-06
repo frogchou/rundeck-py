@@ -1,7 +1,9 @@
 import asyncio
+
 import hashlib
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -13,6 +15,7 @@ from .task_manager import TaskStatus, task_manager
 templates = Jinja2Templates(directory="templates")
 app = FastAPI(title="RunDeck-Py")
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 
 def _auth_token(password: str) -> str:
@@ -43,6 +46,7 @@ async def index(request: Request, settings=Depends(get_settings)):
     )
 
 
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request, settings=Depends(get_settings)):
     try:
@@ -68,6 +72,7 @@ async def login(request: Request, password: str = Form(...), settings=Depends(ge
 
 @app.post("/api/run")
 async def api_run(payload: dict[str, str], auth=Depends(require_auth)):
+
     mode = payload.get("mode")
     value = payload.get("value", "")
     try:
@@ -95,6 +100,7 @@ async def api_run(payload: dict[str, str], auth=Depends(require_auth)):
 
 @app.get("/api/stream/{task_id}")
 async def stream(task_id: str, auth=Depends(require_auth)):
+
     task = task_manager.get_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -122,6 +128,7 @@ async def stream(task_id: str, auth=Depends(require_auth)):
 
 @app.post("/api/stop/{task_id}")
 async def stop(task_id: str, auth=Depends(require_auth)):
+
     task = task_manager.get_task(task_id)
     if not task:
         return JSONResponse(
