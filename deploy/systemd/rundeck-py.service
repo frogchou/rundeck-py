@@ -1,0 +1,14 @@
+[Unit]
+Description=RunDeck-Py Service
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/rundeck-py
+ExecStart=/opt/rundeck-py/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+EnvironmentFile=/opt/rundeck-py/.env
+Restart=on-failure
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
