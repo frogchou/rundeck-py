@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RunDeck-Py</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>RunDeck-Py 控制台</h1>
+            <p class="subtitle">部署监控 / 运维脚本执行控制台</p>
+        </header>
+
+        <section class="controls">
+            <div class="input-group">
+                <label>默认脚本: {{ default_script }}</label>
+                <button id="btn-default" data-default="{{ default_script }}">执行默认脚本</button>
+            </div>
+            <div class="input-group">
+                <label>脚本路径或命令:</label>
+                <input type="text" id="command-input" placeholder="/home/fix/dev.sh 或 echo hello">
+                <button id="btn-run">执行</button>
+                <button id="btn-stop" class="danger" disabled>停止</button>
+            </div>
+            <div class="input-group info">
+                <span>允许的脚本目录: {{ allowed_root }}</span>
+                <span>任意命令开关: {{ '开启' if allow_arbitrary else '关闭' }}</span>
+            </div>
+            <div class="input-group">
+                <button id="btn-clear">清空输出</button>
+                <button id="btn-copy">复制输出</button>
+                <label class="auto-scroll"><input type="checkbox" id="auto-scroll" checked> 自动滚动</label>
+            </div>
+        </section>
+
+        <section class="console">
+            <div id="output" class="output" aria-label="输出控制台"></div>
+        </section>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
