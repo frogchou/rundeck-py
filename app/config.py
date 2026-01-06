@@ -1,9 +1,13 @@
 import os
 from functools import lru_cache
-from pydantic import BaseSettings, Field
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+
     host: str = Field("0.0.0.0", env="HOST")
     port: int = Field(8000, env="PORT")
     default_script: str = Field("/home/fix/dev.sh", env="DEFAULT_SCRIPT")
@@ -16,10 +20,6 @@ class Settings(BaseSettings):
     command_whitelist: str = Field(
         "echo,ls,cat,tail,grep,systemctl status,journalctl -u", env="COMMAND_WHITELIST"
     )
-
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
 
     @property
     def whitelist_commands(self) -> list[str]:
