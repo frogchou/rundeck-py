@@ -78,7 +78,6 @@ class TaskManager:
         async with self._lock:
             if task.status == TaskStatus.RUNNING:
                 task.status = status
-            self.current_task = None
 
     async def stop_task(self, task_id: str) -> None:
         async with self._lock:
@@ -91,7 +90,6 @@ class TaskManager:
                 except ProcessLookupError:
                     pass
                 task.status = TaskStatus.STOPPED
-            self.current_task = None
 
 
 task_manager = TaskManager()

@@ -55,40 +55,52 @@ def build_command(mode: str, value: str) -> Tuple[List[str], str]:
 
 
 async def run_task(mode: str, value: str, manager: TaskManager = task_manager) -> Task:
-    task = await manager.create_task(mode, value)
+    """Start a task asynchronously and return immediately."""
+
     args, display_value = build_command(mode, value)
+    task = await manager.create_task(mode, value)
 
-    process = await asyncio.create_subprocess_exec(
-        *args,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        start_new_session=True,
-    )
-    task.process = process
-    task.append_output(f"[task {task.task_id}] Started {mode}: {display_value}\n")
+    async def _runner() -> None:
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *args,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                start_new_session=True,
+            )
+        except Exception as exc:  # pragma: no cover - startup failures are rare
+            task.status = TaskStatus.FAILED
+            task.append_output(f"[system] Failed to start task: {exc}\n")
+            await manager.finish_task(task, task.status)
+            return
 
-    async def read_stream(stream: asyncio.StreamReader, label: str) -> None:
-        while True:
-            line = await stream.readline()
-            if not line:
-                break
-            decoded = line.decode(errors="replace")
-            task.append_output(f"[{label}] {decoded}")
+        task.process = process
+        task.append_output(f"[task {task.task_id}] Started {mode}: {display_value}\n")
 
-    stdout_task = asyncio.create_task(read_stream(process.stdout, "stdout"))
-    stderr_task = asyncio.create_task(read_stream(process.stderr, "stderr"))
+        async def read_stream(stream: asyncio.StreamReader, label: str) -> None:
+            while True:
+                line = await stream.readline()
+                if not line:
+                    break
+                decoded = line.decode(errors="replace")
+                task.append_output(f"[{label}] {decoded}")
 
-    await asyncio.wait({stdout_task, stderr_task})
-    return_code = await process.wait()
+        stdout_task = asyncio.create_task(read_stream(process.stdout, "stdout"))
+        stderr_task = asyncio.create_task(read_stream(process.stderr, "stderr"))
 
-    if task.status == TaskStatus.STOPPED:
-        task.append_output("[system] Task stopped by user\n")
-    elif return_code == 0:
-        task.status = TaskStatus.FINISHED
-        task.append_output("[system] Task finished successfully\n")
-    else:
-        task.status = TaskStatus.FAILED
-        task.append_output(f"[system] Task failed with code {return_code}\n")
+        await asyncio.wait({stdout_task, stderr_task})
+        return_code = await process.wait()
 
-    await manager.finish_task(task, task.status)
+        if task.status == TaskStatus.STOPPED:
+            task.append_output("[system] Task stopped by user\n")
+        elif return_code == 0:
+            task.status = TaskStatus.FINISHED
+            task.append_output("[system] Task finished successfully\n")
+        else:
+            task.status = TaskStatus.FAILED
+            task.append_output(f"[system] Task failed with code {return_code}\n")
+
+        await manager.finish_task(task, task.status)
+
+    asyncio.create_task(_runner())
     return task
