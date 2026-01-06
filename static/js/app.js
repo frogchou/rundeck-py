@@ -95,9 +95,36 @@ btnStop.addEventListener('click', stopTask);
 btnClear.addEventListener('click', clearOutput);
 btnCopy.addEventListener('click', async () => {
     const text = Array.from(output.childNodes).map(n => n.textContent).join('\n');
-    try {
+    if (!text) {
+        appendOutput('[system] 没有可复制的输出');
+        return;
+    }
+
+    const copyWithClipboard = async () => {
         await navigator.clipboard.writeText(text);
         appendOutput('[system] 输出已复制');
+    };
+
+    const copyWithFallback = () => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        const success = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (success) {
+            appendOutput('[system] 输出已复制');
+        } else {
+            throw new Error('fallback copy failed');
+        }
+    };
+
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await copyWithClipboard();
+        } else {
+            copyWithFallback();
+        }
     } catch (err) {
         appendOutput('[error] 无法复制: ' + err);
     }
