@@ -1,6 +1,9 @@
 import asyncio
-from fastapi import FastAPI, HTTPException, Request, status
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+
+import hashlib
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -14,9 +17,24 @@ app = FastAPI(title="RunDeck-Py")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
+
+def _auth_token(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+def require_auth(request: Request, settings=Depends(get_settings)):
+    token = request.cookies.get("auth_token")
+    if token != _auth_token(settings.access_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+
+
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    settings = get_settings()
+async def index(request: Request, settings=Depends(get_settings)):
+    try:
+        require_auth(request, settings)
+    except HTTPException:
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+
     return templates.TemplateResponse(
         "index.html",
         {
@@ -28,8 +46,33 @@ async def index(request: Request):
     )
 
 
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request, settings=Depends(get_settings)):
+    try:
+        require_auth(request, settings)
+        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    except HTTPException:
+        return templates.TemplateResponse("login.html", {"request": request, "error": None})
+
+
+@app.post("/login")
+async def login(request: Request, password: str = Form(...), settings=Depends(get_settings)):
+    if password != settings.access_password:
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "密码错误"},
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    response.set_cookie("auth_token", _auth_token(settings.access_password), httponly=True, samesite="lax")
+    return response
+
+
 @app.post("/api/run")
-async def api_run(payload: dict[str, str]):
+async def api_run(payload: dict[str, str], auth=Depends(require_auth)):
+
     mode = payload.get("mode")
     value = payload.get("value", "")
     try:
@@ -56,7 +99,8 @@ async def api_run(payload: dict[str, str]):
 
 
 @app.get("/api/stream/{task_id}")
-async def stream(task_id: str):
+async def stream(task_id: str, auth=Depends(require_auth)):
+
     task = task_manager.get_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -83,7 +127,8 @@ async def stream(task_id: str):
 
 
 @app.post("/api/stop/{task_id}")
-async def stop(task_id: str):
+async def stop(task_id: str, auth=Depends(require_auth)):
+
     task = task_manager.get_task(task_id)
     if not task:
         return JSONResponse(

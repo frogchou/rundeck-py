@@ -16,6 +16,12 @@ body {
     color: var(--text);
 }
 
+
+.login-container {
+    max-width: 420px;
+    margin-top: 80px;
+}
+
 .container {
     max-width: 1000px;
     margin: 0 auto;
@@ -94,6 +100,34 @@ button.danger { background: var(--danger); color: #fff; }
 .output .system { color: var(--accent); }
 .output .stderr { color: #fbbf24; }
 .output .stdout { color: #cbd5e1; }
+
+
+.login-form {
+    background: var(--panel);
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.login-form label {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.login-form input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    background: #0b1223;
+    color: var(--text);
+}
+
+.login-form .error {
+    color: var(--danger);
+}
 
 @media (max-width: 640px) {
     .container { padding: 12px; }

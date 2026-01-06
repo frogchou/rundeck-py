@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RunDeck-Py 登录</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container login-container">
+        <header>
+            <h1>RunDeck-Py 登录</h1>
+            <p class="subtitle">请输入访问密码</p>
+        </header>
+        <form method="post" action="/login" class="login-form">
+            <label for="password">密码</label>
+            <input type="password" id="password" name="password" required>
+            {% if error %}
+            <div class="error">{{ error }}</div>
+            {% endif %}
+            <button type="submit">登录</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     default_script: str = Field("/home/fix/dev.sh", env="DEFAULT_SCRIPT")
     allowed_script_root: str = Field("/home/fix", env="ALLOWED_SCRIPT_ROOT")
     allow_arbitrary_command: bool = Field(False, env="ALLOW_ARBITRARY_COMMAND")
+    access_password: str = Field("frogchou", env="ACCESS_PASSWORD")
+
 
     # Comma-separated whitelist entries
     command_whitelist: str = Field(

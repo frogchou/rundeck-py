@@ -33,7 +33,9 @@ cp .env.example .env
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-浏览器访问 `http://<host>:8000/` 即可使用控制台。
+
+浏览器访问 `http://<host>:8000/`，使用密码登录（默认 `frogchou`，请在 `.env` 中修改）。
+
 
 ## 配置项（.env）
 - `HOST`：监听地址，默认 `0.0.0.0`。
@@ -42,10 +44,15 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 - `ALLOWED_SCRIPT_ROOT`：脚本白名单根目录，默认 `/home/fix`。
 - `ALLOW_ARBITRARY_COMMAND`：是否允许任意命令，默认 `false`（安全起见保持关闭）。
 - `COMMAND_WHITELIST`：命令白名单，逗号分隔，默认 `echo,ls,cat,tail,grep,systemctl status,journalctl -u`。
+- `ACCESS_PASSWORD`：访问控制密码，默认 `frogchou`。访问页面或调用 API 时需要先登录。
+
 
 > ⚠️ **安全提示**：
 > - 仅当你完全信任调用者和环境时再将 `ALLOW_ARBITRARY_COMMAND` 设为 `true`。开启后意味着可以执行任意命令，存在极大风险。
 > - 建议使用受限的系统用户运行本服务，并限制网络访问。
+> - 登录密码请及时修改并妥善保护，避免泄露。
+
+
 
 ## API
 - `GET /`：返回控制台页面。

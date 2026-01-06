@@ -38,6 +38,11 @@ async function startTask(mode, value) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mode, value })
         });
+        if (res.status === 401) {
+            window.location = '/login';
+            return;
+        }
+
         const data = await res.json();
         if (!data.success) {
             appendOutput(`[error] ${data.error.message || '执行失败'}`);
@@ -67,7 +72,11 @@ function streamOutput(taskId) {
 
 async function stopTask() {
     if (!currentTaskId) return;
-    await fetch(`/api/stop/${currentTaskId}`, { method: 'POST' });
+    const res = await fetch(`/api/stop/${currentTaskId}`, { method: 'POST' });
+    if (res.status === 401) {
+        window.location = '/login';
+        return;
+    }
     setRunning(false);
     if (eventSource) eventSource.close();
 }
